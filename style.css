@@ -1,55 +1,96 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
+  margin: 0;
   font-family: Arial, sans-serif;
-  text-align: center;
-  padding: 30px;
-  background-color: #f9f9f9;
-  color: #333;
+  background-color: #f8f8f8;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-#landing input {
-  width: 200px;
+#login-screen, #chat-screen {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#code-input {
   padding: 10px;
-  font-size: 16px;
-  margin-right: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  font-size: 18px;
+  width: 80%;
+  margin: 10px 0;
 }
 
-#landing button {
+button {
   padding: 10px 20px;
   font-size: 16px;
   cursor: pointer;
 }
 
-#chat {
-  max-width: 400px;
-  margin: 20px auto 0;
-  display: none;
+#chat-header {
+  font-size: 24px;
+  font-weight: bold;
+  padding: 10px;
+  width: 100%;
+  text-align: center;
+  background-color: #6200ea;
+  color: white;
 }
 
 #messages {
-  border: 1px solid #ccc;
-  height: 300px;
+  flex: 1;
   overflow-y: auto;
+  width: 100%;
   padding: 10px;
-  background: #fff;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
+}
+
+.message {
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+.message.abir {
+  background-color: #d1e7ff;
+  align-self: flex-end;
+  text-align: right;
+}
+
+.message.tisha {
+  background-color: #e8f5e9;
+  align-self: flex-start;
   text-align: left;
-  border-radius: 4px;
 }
 
-#messageInput {
-  width: 70%;
+.timestamp {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-top: 4px;
+}
+
+#input-area {
+  display: flex;
+  width: 100%;
+}
+
+#message-input {
+  flex: 1;
   padding: 10px;
   font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
 }
 
-#sendButton {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-left: 10px;
-  border-radius: 4px;
+#input-area button {
+  background-color: #6200ea;
+  color: white;
+  border: none;
 }

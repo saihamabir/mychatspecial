@@ -1,55 +1,49 @@
-body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  padding: 30px;
-  background-color: #f9f9f9;
-  color: #333;
-}
-
-#landing input {
-  width: 200px;
-  padding: 10px;
-  font-size: 16px;
-  margin-right: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-#landing button {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-#chat {
-  max-width: 400px;
-  margin: 20px auto 0;
-  display: none;
-}
-
 #messages {
-  border: 1px solid #ccc;
-  height: 300px;
+  flex-grow: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 15px;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
   background: #fff;
-  margin-bottom: 15px;
+  font-size: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* space between messages */
+}
+
+.message {
+  padding: 10px 15px;
+  border-radius: 18px;
+  max-width: 70%;
+  word-wrap: break-word;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  display: inline-block;
+}
+
+.message.you {
+  background-color: #d1e7dd;
+  align-self: flex-end;
+  text-align: right;
+}
+
+.message.other {
+  background-color: #f8d7da;
+  align-self: flex-start;
   text-align: left;
-  border-radius: 4px;
 }
 
-#messageInput {
-  width: 70%;
-  padding: 10px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.sender {
+  font-weight: bold;
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 3px;
 }
 
-#sendButton {
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  margin-left: 10px;
-  border-radius: 4px;
+.time {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #666;
+  margin-left: 8px;
 }
+

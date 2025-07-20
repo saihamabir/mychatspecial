@@ -2,22 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Guess the Code</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Secret Chat</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="login-screen">
+  <!-- Code entry screen -->
+  <div id="login-screen" class="screen">
     <h1>Hey, guess the code</h1>
-    <input type="text" id="code-input" maxlength="10" placeholder="Enter 10-digit code" />
+    <input id="code-input" maxlength="10" placeholder="Enter 10-digit code" />
     <button onclick="verifyCode()">Enter</button>
   </div>
 
-  <div id="chat-screen" style="display: none;">
+  <!-- Username set screen -->
+  <div id="username-screen" class="screen" style="display:none;">
+    <h1>Set your username</h1>
+    <input id="username-input" maxlength="15" placeholder="Enter your name" />
+    <button onclick="setUsername()">Set Username</button>
+  </div>
+
+  <!-- Chat screen -->
+  <div id="chat-screen" class="screen" style="display:none;">
     <div id="chat-header">Secret Chat</div>
     <div id="messages"></div>
     <div id="input-area">
-      <input type="text" id="message-input" placeholder="Type a message..." />
+      <input id="message-input" placeholder="Type a message..." />
       <button onclick="sendMessage()">➤</button>
     </div>
   </div>
@@ -27,3 +36,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+

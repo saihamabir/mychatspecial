@@ -1,161 +1,85 @@
-// Firebase config
+// Your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBDaiilZDGOS5kEJgY3SWo0rP6U51MCiQU",
   authDomain: "awesome-chat-f169e.firebaseapp.com",
   projectId: "awesome-chat-f169e",
-  storageBucket: "awesome-chat-f169e.appspot.com",
+  storageBucket: "awesome-chat-f169e.firebasestorage.app",
   messagingSenderId: "804708865216",
   appId: "1:804708865216:web:ec199bf947fd6c5dd90925"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db = firebase.database();
 
-// Your 10-digit code to access chat
-const correctCode = "1234567890"; // Change this as you want
-
-// Elements
-const landing = document.getElementById("landing");
-const codeInput = document.getElementById("codeInput");
-const codeSubmit = document.getElementById("codeSubmit");
-
-const namePrompt = document.getElementById("namePrompt");
-const nameInput = document.getElementById("nameInput");
-const nameSubmit = document.getElementById("nameSubmit");
-
-const chat = document.getElementById("chat");
+const correctCode = "1314192419"; // you can change this
+const loginScreen = document.getElementById("login-screen");
+const chatScreen = document.getElementById("chat-screen");
+const codeInput = document.getElementById("code-input");
+const messageInput = document.getElementById("message-input");
 const messagesDiv = document.getElementById("messages");
-const messageInput = document.getElementById("messageInput");
-const sendButton = document.getElementById("sendButton");
 
-// Variables
-let currentUserName = null;
+// Identify user by IP (if possible) or use local fallback
+let username = localStorage.getItem("chatUser");
 
-// Step 1: Check the code
-function checkCode() {
-  if (codeInput.value.trim() === correctCode) {
-    landing.style.display = "none";
-    // Show name prompt
-    namePrompt.style.display = "block";
-    // If name already saved, skip prompt
-    const savedName = localStorage.getItem("chatUserName");
-    if (savedName && savedName.trim() !== "") {
-      currentUserName = savedName;
-      namePrompt.style.display = "none";
-      showChat();
-    }
-  } else {
-    alert("Wrong code. Try again.");
-  }
-}
-
-// Step 2: After name entered
-function submitName() {
-  const enteredName = nameInput.value.trim();
-  if (enteredName === "") {
-    alert("Please enter your name");
-    return;
-  }
-  currentUserName = enteredName;
-  localStorage.setItem("chatUserName", enteredName);
-  namePrompt.style.display = "none";
-  showChat();
-}
-
-// Step 3: Show chat & start listening for messages
-function showChat() {
-  chat.style.display = "flex";
-  loadMessages();
-}
-
-// Step 4: Load and listen for messages
-function loadMessages() {
-  db.collection("messages")
-    .orderBy("timestamp")
-    .onSnapshot((snapshot) => {
-      messagesDiv.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const msgDiv = document.createElement("div");
-        msgDiv.classList.add("message");
-
-        // Check if the message is from current user
-        if (data.sender === currentUserName) {
-          msgDiv.classList.add("you");
-        } else {
-          msgDiv.classList.add("other");
-        }
-
-        // Format time
-        let timeString = "";
-        if (data.timestamp && data.timestamp.toDate) {
-          const date = data.timestamp.toDate();
-          timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-
-        // Escape HTML to avoid injection but allow emojis (unicode chars)
-        function escapeHtml(text) {
-          var map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-          };
-          return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-        }
-
-        const safeText = escapeHtml(data.text);
-
-        // Insert message content with emojis supported (unicode works natively)
-        msgDiv.innerHTML = `
-          <span class="sender">${data.sender}</span>
-          <span class="time">${timeString}</span><br />
-          <span>${safeText}</span>
-        `;
-
-        messagesDiv.appendChild(msgDiv);
-      });
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+if (!username) {
+  fetch("https://api.ipify.org?format=json")
+    .then(res => res.json())
+    .then(data => {
+      if (data.ip === "YOUR_TISHA_IP_HERE") {
+        username = "tisha";
+      } else {
+        username = "abir";
+      }
+      localStorage.setItem("chatUser", username);
+    })
+    .catch(() => {
+      username = "abir";
+      localStorage.setItem("chatUser", username);
     });
 }
 
-// Step 5: Send message to Firestore
+function verifyCode() {
+  if (codeInput.value === correctCode) {
+    loginScreen.style.display = "none";
+    chatScreen.style.display = "flex";
+    listenForMessages();
+  } else {
+    alert("Wrong code!");
+  }
+}
+
 function sendMessage() {
   const text = messageInput.value.trim();
-  if (text === "") return;
-  db.collection("messages").add({
+  if (!text) return;
+
+  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  db.ref("messages").push({
+    name: username,
     text: text,
-    sender: currentUserName,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    time: timestamp
   });
+
   messageInput.value = "";
-  autoResizeTextarea(); // reset height
 }
 
-// Auto resize textarea height based on content
-function autoResizeTextarea() {
-  messageInput.style.height = "auto";
-  messageInput.style.height = messageInput.scrollHeight + "px";
+function listenForMessages() {
+  db.ref("messages").on("value", (snapshot) => {
+    messagesDiv.innerHTML = "";
+    snapshot.forEach((child) => {
+      const msg = child.val();
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("message", msg.name);
+      msgDiv.innerHTML = `<div>${msg.text}</div><div class="timestamp">${msg.name} • ${msg.time}</div>`;
+      messagesDiv.appendChild(msgDiv);
+    });
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
 }
 
-// Event listeners
-codeSubmit.addEventListener("click", checkCode);
-codeInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") checkCode();
-});
-
-nameSubmit.addEventListener("click", submitName);
-nameInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") submitName();
-});
-
-sendButton.addEventListener("click", sendMessage);
-messageInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
+// Press Enter to send
+messageInput.addEventListener("keypress", function(e) {
+  if (e.key === "Enter") {
     sendMessage();
   }
 });
-messageInput.addEventListener("input", autoResizeTextarea);

@@ -7,17 +7,18 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
   <!-- Code entry screen -->
   <div id="login-screen" class="screen">
     <h1>Hey, guess the code</h1>
-    <input id="code-input" maxlength="10" placeholder="Enter 10-digit code" />
+    <input id="code-input" maxlength="10" placeholder="Enter 10-digit code" autofocus />
     <button onclick="verifyCode()">Enter</button>
   </div>
 
-  <!-- Username set screen -->
+  <!-- Username screen -->
   <div id="username-screen" class="screen" style="display:none;">
     <h1>Set your username</h1>
-    <input id="username-input" maxlength="15" placeholder="Enter your name" />
+    <input id="username-input" maxlength="15" placeholder="Enter your name (Abir or Tisha)" autofocus />
     <button onclick="setUsername()">Set Username</button>
   </div>
 
@@ -26,14 +27,15 @@
     <div id="chat-header">Secret Chat</div>
     <div id="messages"></div>
     <div id="input-area">
-      <input id="message-input" placeholder="Type a message..." />
+      <input id="message-input" placeholder="Type a message..." autofocus />
       <button onclick="sendMessage()">➤</button>
     </div>
   </div>
 
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
   <script src="script.js"></script>
 </body>
 </html>
-

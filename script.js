@@ -13,7 +13,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // Your 10-digit code to access chat
-const correctCode = "17072009"; // Change this as you want
+const correctCode = "1234567890"; // Change this as you want
 
 // Elements
 const landing = document.getElementById("landing");
@@ -65,7 +65,7 @@ function submitName() {
 
 // Step 3: Show chat & start listening for messages
 function showChat() {
-  chat.style.display = "block";
+  chat.style.display = "flex";
   loadMessages();
 }
 
@@ -94,10 +94,25 @@ function loadMessages() {
           timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
+        // Escape HTML to avoid injection but allow emojis (unicode chars)
+        function escapeHtml(text) {
+          var map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+          };
+          return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        const safeText = escapeHtml(data.text);
+
+        // Insert message content with emojis supported (unicode works natively)
         msgDiv.innerHTML = `
           <span class="sender">${data.sender}</span>
           <span class="time">${timeString}</span><br />
-          <span>${data.text}</span>
+          <span>${safeText}</span>
         `;
 
         messagesDiv.appendChild(msgDiv);
@@ -116,6 +131,13 @@ function sendMessage() {
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
   messageInput.value = "";
+  autoResizeTextarea(); // reset height
+}
+
+// Auto resize textarea height based on content
+function autoResizeTextarea() {
+  messageInput.style.height = "auto";
+  messageInput.style.height = messageInput.scrollHeight + "px";
 }
 
 // Event listeners
@@ -131,5 +153,9 @@ nameInput.addEventListener("keypress", (e) => {
 
 sendButton.addEventListener("click", sendMessage);
 messageInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") sendMessage();
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
 });
+messageInput.addEventListener("input", autoResizeTextarea);

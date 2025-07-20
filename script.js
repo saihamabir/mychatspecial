@@ -1,114 +1,136 @@
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBDaiilZDGOS5kEJgY3SWo0rP6U51MCiQU",
   authDomain: "awesome-chat-f169e.firebaseapp.com",
-  databaseURL: "https://awesome-chat-f169e-default-rtdb.firebaseio.com",
   projectId: "awesome-chat-f169e",
-  storageBucket: "awesome-chat-f169e.firebasestorage.app",
+  storageBucket: "awesome-chat-f169e.appspot.com",
   messagingSenderId: "804708865216",
   appId: "1:804708865216:web:ec199bf947fd6c5dd90925"
 };
 
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const db = firebase.firestore();
 
-const correctCode = "1314192419"; // change this code if you want
+// Your 10-digit code to access chat
+const correctCode = "17072009"; // Change this as you want
 
-// DOM elements
-const loginScreen = document.getElementById("login-screen");
-const usernameScreen = document.getElementById("username-screen");
-const chatScreen = document.getElementById("chat-screen");
+// Elements
+const landing = document.getElementById("landing");
+const codeInput = document.getElementById("codeInput");
+const codeSubmit = document.getElementById("codeSubmit");
 
-const codeInput = document.getElementById("code-input");
-const usernameInput = document.getElementById("username-input");
-const messageInput = document.getElementById("message-input");
+const namePrompt = document.getElementById("namePrompt");
+const nameInput = document.getElementById("nameInput");
+const nameSubmit = document.getElementById("nameSubmit");
+
+const chat = document.getElementById("chat");
 const messagesDiv = document.getElementById("messages");
+const messageInput = document.getElementById("messageInput");
+const sendButton = document.getElementById("sendButton");
 
-let username = localStorage.getItem("chatUser");
+// Variables
+let currentUserName = null;
 
-// Verify 10-digit code
-function verifyCode() {
-  if (codeInput.value === correctCode) {
-    loginScreen.style.display = "none";
-    if (username) {
+// Step 1: Check the code
+function checkCode() {
+  if (codeInput.value.trim() === correctCode) {
+    landing.style.display = "none";
+    // Show name prompt
+    namePrompt.style.display = "block";
+    // If name already saved, skip prompt
+    const savedName = localStorage.getItem("chatUserName");
+    if (savedName && savedName.trim() !== "") {
+      currentUserName = savedName;
+      namePrompt.style.display = "none";
       showChat();
-    } else {
-      usernameScreen.style.display = "flex";
     }
   } else {
-    alert("Wrong code!");
+    alert("Wrong code. Try again.");
   }
 }
 
-// Set username after code verified
-function setUsername() {
-  let name = usernameInput.value.trim().toLowerCase();
-  if (name !== "abir" && name !== "tisha") {
-    alert("Username must be 'Abir' or 'Tisha'");
+// Step 2: After name entered
+function submitName() {
+  const enteredName = nameInput.value.trim();
+  if (enteredName === "") {
+    alert("Please enter your name");
     return;
   }
-  username = name;
-  localStorage.setItem("chatUser", username);
-  usernameScreen.style.display = "none";
+  currentUserName = enteredName;
+  localStorage.setItem("chatUserName", enteredName);
+  namePrompt.style.display = "none";
   showChat();
 }
 
-// Show chat screen and start listening for messages
+// Step 3: Show chat & start listening for messages
 function showChat() {
-  chatScreen.style.display = "flex";
-  listenForMessages();
-  messageInput.focus();
+  chat.style.display = "block";
+  loadMessages();
 }
 
-// Send message to Firebase
+// Step 4: Load and listen for messages
+function loadMessages() {
+  db.collection("messages")
+    .orderBy("timestamp")
+    .onSnapshot((snapshot) => {
+      messagesDiv.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const msgDiv = document.createElement("div");
+        msgDiv.classList.add("message");
+
+        // Check if the message is from current user
+        if (data.sender === currentUserName) {
+          msgDiv.classList.add("you");
+        } else {
+          msgDiv.classList.add("other");
+        }
+
+        // Format time
+        let timeString = "";
+        if (data.timestamp && data.timestamp.toDate) {
+          const date = data.timestamp.toDate();
+          timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        msgDiv.innerHTML = `
+          <span class="sender">${data.sender}</span>
+          <span class="time">${timeString}</span><br />
+          <span>${data.text}</span>
+        `;
+
+        messagesDiv.appendChild(msgDiv);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+}
+
+// Step 5: Send message to Firestore
 function sendMessage() {
   const text = messageInput.value.trim();
-  if (!text) return;
-
-  const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-  db.ref("messages").push({
-    name: username,
+  if (text === "") return;
+  db.collection("messages").add({
     text: text,
-    time: time
+    sender: currentUserName,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
-
   messageInput.value = "";
 }
 
-// Listen for new messages and update DOM
-function listenForMessages() {
-  db.ref("messages").off();
-  db.ref("messages").on("child_added", snapshot => {
-    addMessageToDOM(snapshot.val());
-  });
-}
+// Event listeners
+codeSubmit.addEventListener("click", checkCode);
+codeInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") checkCode();
+});
 
-// Add message to chat DOM
-function addMessageToDOM(msg) {
-  const msgDiv = document.createElement("div");
-  msgDiv.classList.add("message", msg.name);
-  msgDiv.innerHTML = `
-    <div>${escapeHtml(msg.text)}</div>
-    <div class="timestamp">${capitalize(msg.name)} • ${msg.time}</div>
-  `;
-  messagesDiv.appendChild(msgDiv);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
+nameSubmit.addEventListener("click", submitName);
+nameInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") submitName();
+});
 
-// Escape HTML to prevent injection
-function escapeHtml(text) {
-  const div = document.createElement("div");
-  div.innerText = text;
-  return div.innerHTML;
-}
-
-// Capitalize first letter
-function capitalize(s) {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-// Press Enter to send message
-messageInput.addEventListener("keypress", e => {
+sendButton.addEventListener("click", sendMessage);
+messageInput.addEventListener("keypress", (e) => {
   if (e.key === "Enter") sendMessage();
 });
 

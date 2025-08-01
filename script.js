@@ -13,7 +13,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // Your 10-digit code to access chat
-const correctCode = "13012018"; // Change this as you want
+const correctCode = "17072007"; // Change this as you want
 
 // Elements
 const landing = document.getElementById("landing");
